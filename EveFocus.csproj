@@ -1,0 +1,28 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net48</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <RootNamespace>EveFocus</RootNamespace>
+    <AssemblyName>EveFocus</AssemblyName>
+    <Version>1.0.0</Version>
+    <AssemblyTitle>EVE Focus</AssemblyTitle>
+    <Product>EVE Focus</Product>
+    <Description>Light window switcher for EVE Online clients.</Description>
+    <IncludeSourceRevisionInInformationalVersion>false</IncludeSourceRevisionInInformationalVersion>
+    <ApplicationIcon>EveFocus.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Windows.Forms" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <EmbeddedResource Include="EveFocus.ico" LogicalName="EveFocus.ico" />
+  </ItemGroup>
+
+</Project>
