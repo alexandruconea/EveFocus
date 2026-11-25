@@ -2,11 +2,12 @@
 
 A light window switcher for EVE Online clients: one small exe that lives in the system tray, with no thumbnails and nothing to install.
 
-## Getting started
+## Download
 
-1. Put `EveFocus.exe` in any folder, for example `D:\Games\EveFocus`, and run it.
-2. The first time, it asks which characters you play and which keys to use for them. Characters that are logged in are already in the list: click a key box and press the keys.
-3. Click **Save and start**. EVE Focus writes your settings to `EveFocus.json` next to the exe and keeps running in the system tray. If that folder can't be written to (for example under Program Files), the file goes to `%APPDATA%\EveFocus` instead.
+1. Download `EveFocus.exe` from the [latest release](https://github.com/alexandruconea/EveFocus/releases/latest).
+2. Put it in any folder, for example `D:\Games\EveFocus`, and run it. If Windows shows "Windows protected your PC", click **More info** and then **Run anyway**.
+3. The first time, it asks which characters you play and which keys to use for them. Characters that are logged in are already in the list: click a key box and press the keys.
+4. Click **Save and start**. EVE Focus writes your settings to `EveFocus.json` next to the exe and keeps running in the system tray. If that folder can't be written to (for example under Program Files), the file goes to `%APPDATA%\EveFocus` instead.
 
 Double-click the tray icon to change the settings later, or right-click it for the menu.
 
@@ -53,13 +54,6 @@ The settings window covers everything, but `EveFocus.json` can also be edited by
 
 Keys are written as modifiers (`Ctrl`, `Alt`, `Shift`, `Win`) plus one key name from WinForms `Keys` (`A`–`Z`, `0`–`9`, `F1`–`F24`, `Left`, `PageDown`, `Oemtilde`, `NumPad1`, ...). An empty string turns a hotkey off. A hotkey is taken from every other program while EVE Focus runs, so avoid keys you use in the game.
 
-## Building
+## Building from source
 
-Needs the .NET SDK (8 or later). `dotnet build -c Release` creates `bin\Release\net48\EveFocus.exe`, and that file is the whole app.
-
-## Releasing
-
-1. Set the new version in `EveFocus.csproj` (`<Version>`), commit it and push.
-2. Tag the commit with the same version, for example `git tag v1.1.0`, and push the tag.
-3. The release workflow builds `EveFocus.exe`, signs it with the `RELEASE_SIGNING_KEY` repository secret and creates a draft release with the exe, its signature and its SHA-256.
-4. Check the draft on GitHub and publish it. Running copies of EVE Focus pick it up from then on.
+You need the .NET SDK (8 or later). `dotnet build -c Release` creates `bin\Release\net48\EveFocus.exe`, and that file is the whole app.
