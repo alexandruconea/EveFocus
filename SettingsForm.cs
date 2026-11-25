@@ -22,6 +22,7 @@ internal sealed class SettingsForm : Form
     private readonly HotkeyBox _previousClientBox;
     private readonly CheckBox _keepOnlyActiveBox;
     private readonly CheckBox _autoLayoutsBox;
+    private readonly CheckBox _checkUpdatesBox;
 
     public SettingsForm(Config config, bool firstRun)
     {
@@ -69,6 +70,12 @@ internal sealed class SettingsForm : Form
             Text = "Put a client back in its saved window layout when the character logs in",
             AutoSize = true,
             Checked = config.AutoApplyLayouts,
+        };
+        _checkUpdatesBox = new CheckBox
+        {
+            Text = "Check for updates once a day (connects only to GitHub)",
+            AutoSize = true,
+            Checked = config.CheckForUpdates,
         };
 
         var addCharacter = NewButton("Add character");
@@ -118,6 +125,7 @@ internal sealed class SettingsForm : Form
         root.Controls.Add(NewSection("Options"));
         root.Controls.Add(_keepOnlyActiveBox);
         root.Controls.Add(_autoLayoutsBox);
+        root.Controls.Add(_checkUpdatesBox);
         root.Controls.Add(NewNote("Click a key box and press the keys. Letters and digits need Ctrl or Alt, " +
                                   "F1-F24 also work alone. Backspace clears a box.", true));
         root.Controls.Add(NewNote("Settings file: " + ConfigStore.FilePath, true));
@@ -301,6 +309,7 @@ internal sealed class SettingsForm : Form
             MinimizeOthersOnSwitch = _keepOnlyActiveBox.Checked,
             AutoApplyLayouts = _autoLayoutsBox.Checked,
             Layouts = _source.Clone().Layouts,
+            CheckForUpdates = _checkUpdatesBox.Checked,
         };
         DialogResult = DialogResult.OK;
     }

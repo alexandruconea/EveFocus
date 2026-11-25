@@ -7,18 +7,39 @@ namespace EveFocus;
 
 internal static class Program
 {
+    public const string UpdatedArgument = "--updated";
+
     [STAThread]
-    private static void Main()
+    private static void Main(string[] args)
     {
-        using var mutex = new Mutex(true, @"Local\EveFocus.SingleInstance", out bool firstInstance);
-        if (!firstInstance) return;
+        bool afterUpdate = args.Any(a => string.Equals(a, UpdatedArgument, StringComparison.OrdinalIgnoreCase));
+        using var mutex = new Mutex(false, @"Local\EveFocus.SingleInstance");
+        if (!Acquire(mutex, afterUpdate ? 15000 : 0)) return;
+        try
+        {
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
 
-        Application.EnableVisualStyles();
-        Application.SetCompatibleTextRenderingDefault(false);
+            bool firstStart = !ConfigStore.Exists;
+            if (firstStart && !RunFirstSetup()) return;
+            Application.Run(new TrayApp(firstStart, afterUpdate));
+        }
+        finally
+        {
+            mutex.ReleaseMutex();
+        }
+    }
 
-        bool firstStart = !ConfigStore.Exists;
-        if (firstStart && !RunFirstSetup()) return;
-        Application.Run(new TrayApp(firstStart));
+    private static bool Acquire(Mutex mutex, int timeoutMs)
+    {
+        try
+        {
+            return mutex.WaitOne(timeoutMs);
+        }
+        catch (AbandonedMutexException)
+        {
+            return true;
+        }
     }
 
     private static bool RunFirstSetup()

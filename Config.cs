@@ -17,6 +17,7 @@ internal sealed class Config
     [DataMember(Order = 3)] public bool MinimizeOthersOnSwitch { get; set; } = true;
     [DataMember(Order = 4)] public bool AutoApplyLayouts { get; set; } = true;
     [DataMember(Order = 5)] public Dictionary<string, WindowLayout> Layouts { get; set; } = NewLayoutMap();
+    [DataMember(Order = 6)] public bool CheckForUpdates { get; set; } = true;
 
     [OnDeserializing]
     private void OnDeserializing(StreamingContext context)
@@ -26,6 +27,7 @@ internal sealed class Config
         MinimizeOthersOnSwitch = true;
         AutoApplyLayouts = true;
         Layouts = NewLayoutMap();
+        CheckForUpdates = true;
     }
 
     public void Normalize()
@@ -57,6 +59,7 @@ internal sealed class Config
             MinimizeOthersOnSwitch = MinimizeOthersOnSwitch,
             AutoApplyLayouts = AutoApplyLayouts,
             Layouts = layouts,
+            CheckForUpdates = CheckForUpdates,
         };
     }
 

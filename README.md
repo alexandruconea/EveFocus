@@ -27,6 +27,12 @@ EVE Focus only manages windows: it focuses, minimizes, restores and moves them. 
 
 Use EVE in **Window** or **Fixed Window** mode. Exclusive fullscreen doesn't minimize and restore cleanly.
 
+## Updates
+
+EVE Focus checks for a new version when it starts and once a day. When there is one, it says so, and the tray menu shows **Update to EVE Focus x.y...**; **Check for updates** in the tray menu checks right away. An update is only downloaded from this repository's releases and only installed when its signature matches the release key built into the app. EVE Focus then restarts, and your settings stay as they are.
+
+The automatic check can be turned off in the settings. It is the only time EVE Focus connects to the internet: it asks `api.github.com` for the latest release and, when you choose to update, downloads it from `github.com`. Nothing else is sent.
+
 ## The settings file
 
 The settings window covers everything, but `EveFocus.json` can also be edited by hand; EVE Focus reloads it when it is saved.
@@ -40,7 +46,8 @@ The settings window covers everything, but `EveFocus.json` can also be edited by
   "Hotkeys": { "MinimizeAll": "Alt+Q", "NextClient": "", "PreviousClient": "" },
   "MinimizeOthersOnSwitch": true,
   "AutoApplyLayouts": true,
-  "Layouts": {}
+  "Layouts": {},
+  "CheckForUpdates": true
 }
 ```
 
@@ -49,3 +56,10 @@ Keys are written as modifiers (`Ctrl`, `Alt`, `Shift`, `Win`) plus one key name 
 ## Building
 
 Needs the .NET SDK (8 or later). `dotnet build -c Release` creates `bin\Release\net48\EveFocus.exe`, and that file is the whole app.
+
+## Releasing
+
+1. Set the new version in `EveFocus.csproj` (`<Version>`), commit it and push.
+2. Tag the commit with the same version, for example `git tag v1.1.0`, and push the tag.
+3. The release workflow builds `EveFocus.exe`, signs it with the `RELEASE_SIGNING_KEY` repository secret and creates a draft release with the exe, its signature and its SHA-256.
+4. Check the draft on GitHub and publish it. Running copies of EVE Focus pick it up from then on.

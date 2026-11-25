@@ -1,0 +1,73 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    runs-on: windows-latest
+    permissions:
+      contents: write
+    env:
+      TAG: ${{ github.ref_name }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1
+        with:
+          persist-credentials: false
+
+      - name: Check the tag matches the version in EveFocus.csproj
+        shell: pwsh
+        run: |
+          $version = @(([xml](Get-Content -Raw EveFocus.csproj)).Project.PropertyGroup.Version | Where-Object { $_ })[0]
+          function ConvertTo-FullVersion([string]$Text) {
+            $parts = @($Text.TrimStart('v', 'V').Split('.')) + @('0', '0', '0')
+            [version]($parts[0..3] -join '.')
+          }
+          if ((ConvertTo-FullVersion $env:TAG) -ne (ConvertTo-FullVersion $version)) {
+            throw "Tag $env:TAG doesn't match the version in EveFocus.csproj ($version)."
+          }
+          "VERSION=$($env:TAG.TrimStart('v', 'V'))" | Out-File -FilePath $env:GITHUB_ENV -Append -Encoding utf8
+
+      - name: Build
+        shell: pwsh
+        run: dotnet build EveFocus.csproj -c Release
+
+      - name: Sign EveFocus.exe
+        shell: pwsh
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+        run: |
+          if (-not $env:RELEASE_SIGNING_KEY) { throw "The RELEASE_SIGNING_KEY secret is not set." }
+          New-Item -ItemType Directory -Force dist | Out-Null
+          Copy-Item bin/Release/net48/EveFocus.exe dist/EveFocus.exe
+          $hash = (Get-FileHash dist/EveFocus.exe -Algorithm SHA256).Hash.ToLowerInvariant()
+          $message = [Text.Encoding]::UTF8.GetBytes("EveFocus release`nversion=$env:VERSION`nfile=EveFocus.exe`nsha256=$hash`n")
+          $sha256 = [Security.Cryptography.HashAlgorithmName]::SHA256
+          $pkcs1 = [Security.Cryptography.RSASignaturePadding]::Pkcs1
+
+          $signer = [Security.Cryptography.RSA]::Create()
+          $signer.FromXmlString($env:RELEASE_SIGNING_KEY)
+          $signature = $signer.SignData($message, $sha256, $pkcs1)
+
+          $publicKey = [regex]::Match((Get-Content -Raw ReleaseSignature.cs), '<RSAKeyValue>.*?</RSAKeyValue>').Value
+          $verifier = [Security.Cryptography.RSA]::Create()
+          $verifier.FromXmlString($publicKey)
+          if (-not $verifier.VerifyData($message, $signature, $sha256, $pkcs1)) {
+            throw "RELEASE_SIGNING_KEY doesn't match the public key in ReleaseSignature.cs."
+          }
+
+          [IO.File]::WriteAllText("dist/EveFocus.exe.sig", [Convert]::ToBase64String($signature))
+          [IO.File]::WriteAllText("dist/EveFocus.exe.sha256", "$hash  EveFocus.exe`n")
+
+      - name: Create a draft release
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+        run: >
+          gh release create $env:TAG dist/EveFocus.exe dist/EveFocus.exe.sig dist/EveFocus.exe.sha256
+          --draft --title "EVE Focus $env:VERSION" --generate-notes
