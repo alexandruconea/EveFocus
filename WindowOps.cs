@@ -15,11 +15,10 @@ internal static class WindowOps
         uint foregroundThread = Native.GetWindowThreadProcessId(foreground, out _);
         uint thisThread = Native.GetCurrentThreadId();
         bool attached = foregroundThread != 0 && foregroundThread != thisThread
-                        && !Native.IsHungAppWindow(foreground)
+                        && Responds(foreground)
                         && Native.AttachThreadInput(thisThread, foregroundThread, true);
         try
         {
-            if (!Native.IsHungAppWindow(hwnd)) Native.BringWindowToTop(hwnd);
             Native.SetForegroundWindow(hwnd);
         }
         finally
@@ -27,6 +26,10 @@ internal static class WindowOps
             if (attached) Native.AttachThreadInput(thisThread, foregroundThread, false);
         }
     }
+
+    private static bool Responds(IntPtr hwnd) =>
+        Native.SendMessageTimeout(hwnd, Native.WM_NULL, IntPtr.Zero, IntPtr.Zero, Native.SMTO_ABORTIFHUNG,
+            500, out _) != IntPtr.Zero;
 
     public static void Minimize(IntPtr hwnd) => Show(hwnd, Native.SW_MINIMIZE);
 
